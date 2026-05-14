@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Autumnarise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative">
+    <!-- Overlay for better readability -->
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
+
+    <div class="relative bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden max-w-md w-full p-8 md:p-12">
+        <div id="auth-container">
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">🍂 Autumnarise</h1>
+                <h2 class="text-2xl font-bold text-slate-800" id="auth-title">Login</h2>
+                <p class="text-slate-500 mt-2" id="auth-subtitle">Welcome back! Please enter your details.</p>
+            </div>
+
+            <form id="auth-form" class="space-y-5">
+                <div>
+                    <label for="username" class="block text-sm font-semibold text-slate-700 mb-2">Username</label>
+                    <input type="text" id="username" required 
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
+                           placeholder="Enter your username">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-semibold text-slate-700 mb-2">Password</label>
+                    <div class="relative">
+                        <input type="password" id="password" required 
+                               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
+                               placeholder="••••••••">
+                        <button type="button" id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 focus:outline-none">
+                            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="error-msg" class="bg-red-50 text-red-600 text-sm p-4 rounded-xl hidden border border-red-100"></div>
+
+                <button type="submit" 
+                        class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:transform active:scale-[0.98] transition-all">
+                    Sign In
+                </button>
+            </form>
+
+            <p class="mt-8 text-center text-sm text-slate-600">
+                <span id="toggle-text">Don't have an account?</span> 
+                <a href="#" id="toggle-auth" class="text-indigo-600 font-bold hover:text-indigo-700 underline underline-offset-4">Sign up for free</a>
+            </p>
+        </div>
+
+        <div id="logged-in-container" class="hidden text-center py-8">
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">🍂 Autumnarise</h1>
+            <div class="mt-8 mb-10">
+                <div class="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold" id="logged-in-initial">A</div>
+                <h2 class="text-2xl font-bold text-slate-800">Welcome back!</h2>
+                <p class="text-slate-500 mt-2">You are already logged in as <span id="logged-in-user" class="font-bold text-indigo-600">User</span></p>
+            </div>
+            <div class="space-y-4">
+                <a href="/dashboard.html" class="block w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:transform active:scale-[0.98] transition-all">
+                    Go to Dashboard
+                </a>
+                <button id="index-logout-btn" class="w-full py-4 text-slate-500 font-semibold hover:text-red-500 transition-colors">
+                    Log out and sign in with another account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+        const form = document.getElementById('auth-form');
+        const authContainer = document.getElementById('auth-container');
+        const loggedInContainer = document.getElementById('logged-in-container');
+        const loggedInUser = document.getElementById('logged-in-user');
+        const loggedInInitial = document.getElementById('logged-in-initial');
+        const indexLogoutBtn = document.getElementById('index-logout-btn');
+
+        const title = document.getElementById('auth-title');
+        const subtitle = document.getElementById('auth-subtitle');
+        const toggleText = document.getElementById('toggle-text');
+        const toggleBtn = document.getElementById('toggle-auth');
+        const errorMsg = document.getElementById('error-msg');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('toggle-password');
+        const eyeIcon = document.getElementById('eye-icon');
+
+        // Check if already logged in
+        async function checkLogin() {
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.loggedIn) {
+                        authContainer.classList.add('hidden');
+                        loggedInContainer.classList.remove('hidden');
+                        loggedInUser.textContent = data.username;
+                        loggedInInitial.textContent = data.username.charAt(0).toUpperCase();
+                    }
+                }
+            } catch (err) {}
+        }
+        checkLogin();
+
+        indexLogoutBtn.addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            location.reload();
+        });
+
+        // Password visibility toggle
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle icon
+            if (type === 'text') {
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                `;
+            } else {
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                `;
+            }
+        });
+
+        toggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLogin = !isLogin;
+            title.textContent = isLogin ? 'Login' : 'Create Account';
+            subtitle.textContent = isLogin ? 'Welcome back! Please enter your details.' : 'Join us today and start your journey.';
+            toggleText.textContent = isLogin ? "Don't have an account?" : "Already have an account?";
+            toggleBtn.textContent = isLogin ? 'Sign up for free' : 'Log in here';
+            submitBtn.textContent = isLogin ? 'Sign In' : 'Create Account';
+            errorMsg.classList.add('hidden');
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = passwordInput.value;
+            const endpoint = isLogin ? '/api/login' : '/api/signup';
+
+            if (!username || !password) {
+                errorMsg.textContent = "Please fill in all fields.";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            submitBtn.textContent = isLogin ? 'Signing In...' : 'Creating Account...';
+            errorMsg.classList.add('hidden');
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    console.log('Success, redirecting...');
+                    window.location.replace('/dashboard.html');
+                } else {
+                    errorMsg.textContent = data.error || "An unknown error occurred.";
+                    errorMsg.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                    submitBtn.textContent = isLogin ? 'Sign In' : 'Create Account';
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                errorMsg.textContent = "Cannot connect to server. Is it running?";
+                errorMsg.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                submitBtn.textContent = isLogin ? 'Sign In' : 'Create Account';
+            }
+        });
+    </script>
+</body>
+</html>
+

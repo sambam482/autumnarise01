@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autumnaise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden font-sans text-slate-800">
+    
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-20">
+        <a href="/index.html" class="p-8 text-2xl font-black text-white tracking-tight flex items-center gap-2 hover:opacity-80 transition">
+            🍂 Autumnarise
+        </a>
+        <nav class="flex-1 px-4 space-y-1">
+            <button onclick="showTab('habits')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition">🔥 Habits & Streaks</button>
+            <button onclick="showTab('journals')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition">📖 Journal</button>
+            <button onclick="showTab('notes')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition">🔒 Private Notes</button>
+
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center gap-3 px-4 py-3 mb-2 bg-slate-800/50 rounded-xl">
+                <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold text-sm" id="user-initial">U</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-white truncate" id="username-display">User</p>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Pro Member</p>
+                </div>
+            </div>
+            <button id="logout-btn" class="w-full py-3 bg-slate-800 rounded-lg hover:bg-red-500 hover:text-white transition">Log out</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto hide-scroll relative">
+        <div class="max-w-6xl mx-auto p-8 lg:p-12">
+            
+            <section id="habits-section" class="tab-content hidden">
+                <header class="mb-8">
+                    <h1 class="text-4xl font-extrabold text-slate-900" id="welcome-title">Daily Streaks</h1>
+                    <p class="text-slate-500 mt-2">Build good habits one day at a time.</p>
+                </header>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
+                    <form id="habit-form" class="flex gap-4">
+                        <input type="text" id="new-habit" placeholder="E.g., Read 10 pages..." class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <button type="submit" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">Add Habit</button>
+                    </form>
+                </div>
+                
+                <div id="habits-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"></div>
+
+                <!-- Daily Progress Bar (Moved to bottom) -->
+                <div class="mb-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Today's Progress</h2>
+                        <span id="progress-percent" class="text-2xl font-black text-indigo-600">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden">
+                        <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <p id="progress-text" class="text-sm text-slate-500 mt-4">Start your day by checking in a habit!</p>
+                </div>
+            </section>
+
+            <section id="journals-section" class="tab-content hidden">
+                <header class="mb-8">
+                    <h1 class="text-4xl font-extrabold text-slate-900">My Journal</h1>
+                </header>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
+                    <form id="journal-form" class="space-y-4">
+                        <textarea id="journal-entry" rows="4" placeholder="How was your day?" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" required></textarea>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">Save Entry</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="journals-list" class="space-y-6"></div>
+            </section>
+
+            <section id="notes-section" class="tab-content hidden">
+                <header class="mb-8">
+                    <h1 class="text-4xl font-extrabold text-slate-900">Private Notes</h1>
+                    <p class="text-slate-500 mt-2">Locked with a password for your eyes only.</p>
+                </header>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
+                    <form id="note-form" class="flex flex-col gap-4">
+                        <input type="text" id="note-title" placeholder="Note Title" class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" required>
+                        <textarea id="note-content" rows="3" placeholder="Secret content..." class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" required></textarea>
+                        <div class="flex gap-4">
+                            <input type="password" id="note-password" placeholder="Set a Lock Password" class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" required>
+                            <button type="submit" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">Lock & Save</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="notes-list" class="space-y-4"></div>
+            </section>
+
+
+        </div>
+    </main>
+
+    <div id="password-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-96">
+            <h3 class="text-xl font-bold mb-4">Unlock Note</h3>
+            <input type="password" id="unlock-pwd" placeholder="Enter password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl mb-4">
+            <p id="unlock-err" class="text-red-500 text-sm hidden mb-4">Incorrect password</p>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal()" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button id="unlock-submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Unlock</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reading-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-2xl">
+            <h3 class="text-2xl font-bold mb-4 border-b pb-2" id="read-title"></h3>
+            <p id="read-content" class="text-slate-700 whitespace-pre-wrap min-h-[100px]"></p>
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeReadingModal()" class="px-6 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Core Navigation & Auth
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/me');
+                if (res.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                const data = await res.json();
+                if (data.loggedIn) {
+                    document.getElementById('username-display').textContent = data.username;
+                    document.getElementById('user-initial').textContent = data.username.charAt(0).toUpperCase();
+                    // Optional: Personalize the title
+                    document.getElementById('welcome-title').textContent = `Welcome, ${data.username}!`;
+                }
+            } catch (err) {
+                console.error('Auth check failed:', err);
+                window.location.href = '/index.html';
+            }
+        }
+        checkAuth();
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/index.html';
+        });
+
+        function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`${tab}-section`).classList.remove('hidden');
+
+    if(tab === 'habits') loadHabits();
+    if(tab === 'journals') loadJournals();
+    if(tab === 'notes') loadNotes();
+
+    setTimeout(() => {
+        if (canvas) {
+            canvas.calcOffset();
+            canvas.renderAll();
+        }
+    }, 100);
+}
+
+        // --- 1. HABITS ---
+        async function loadHabits() {
+            const res = await fetch('/api/habits');
+            const habits = await res.json();
+            const list = document.getElementById('habits-list');
+            const today = new Date().toLocaleDateString('en-CA');
+            console.log('Today:', today, 'Habits:', habits);
+
+            // Progress Calculation
+            const total = habits.length;
+            const completed = habits.filter(h => h.last_completed === today).length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-percent').textContent = `${percent}%`;
+            
+            const progressText = document.getElementById('progress-text');
+            if (total === 0) {
+                progressText.textContent = "You haven't added any habits yet.";
+            } else if (percent === 100) {
+                progressText.textContent = "Perfect day! All habits completed. 🎉";
+            } else {
+                progressText.textContent = `${completed} of ${total} habits completed for today.`;
+            }
+
+            list.innerHTML = habits.map(h => {
+                const isCompletedToday = h.last_completed === today;
+                return `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center relative group ${isCompletedToday ? 'bg-indigo-50/30' : ''}">
+                    <div class="flex items-center gap-4">
+                        <input type="checkbox" 
+                               ${isCompletedToday ? 'checked' : ''} 
+                               onclick="toggleHabit(${h.id}, this.checked)" 
+                               class="w-6 h-6 rounded-lg border-2 border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all">
+                        <div>
+                            <h3 class="text-lg font-bold ${isCompletedToday ? 'line-through text-slate-400' : 'text-slate-800'} transition-all">${h.name}</h3>
+                            <p class="text-slate-500 text-sm">Last done: ${h.last_completed || 'Never'}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-2xl font-black ${isCompletedToday ? 'text-orange-500' : 'text-slate-300'} transition-all">🔥 ${h.streak}</div>
+                    </div>
+                    <button onclick="deleteHabit(${h.id})" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">✕</button>
+                </div>
+            `}).join('');
+        }
+        document.getElementById('habit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch('/api/habits', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({name: document.getElementById('new-habit').value}) });
+            document.getElementById('new-habit').value = '';
+            loadHabits();
+        });
+
+        async function toggleHabit(id, isChecked) {
+            const endpoint = isChecked ? `/api/habits/${id}/checkin` : `/api/habits/${id}/uncheck`;
+            try {
+                const res = await fetch(endpoint, { method: 'POST' });
+                if (res.ok) {
+                    loadHabits();
+                } else {
+                    console.error('Failed to toggle habit');
+                    // Reload to revert UI state on failure
+                    loadHabits();
+                }
+            } catch (err) {
+                console.error('Error toggling habit:', err);
+                loadHabits();
+            }
+        }
+
+        async function checkinHabit(id) {
+            await fetch(`/api/habits/${id}/checkin`, { method: 'POST' });
+            loadHabits();
+        }
+        async function deleteHabit(id) {
+            if(confirm('Delete this habit?')) {
+                await fetch(`/api/habits/${id}`, { method: 'DELETE' });
+                loadHabits();
+            }
+        }
+
+        // --- 2. JOURNALS ---
+        async function loadJournals() {
+            const res = await fetch('/api/journals');
+            const journals = await res.json();
+            const list = document.getElementById('journals-list');
+            if (journals.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
+                        <p class="text-slate-400">No journal entries yet. Start writing your first one!</p>
+                    </div>`;
+                return;
+            }
+            list.innerHTML = journals.map(j => `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-4 relative group">
+                    <div class="flex-1">
+                        <div class="text-xs font-bold text-indigo-500 mb-2 uppercase tracking-wider">${new Date(j.timestamp).toLocaleDateString()}</div>
+                        <p class="text-slate-700 whitespace-pre-wrap">${j.entry}</p>
+                    </div>
+                    <button onclick="deleteJournal(${j.id})" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">✕</button>
+                </div>
+            `).join('');
+        }
+        document.getElementById('journal-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const entry = document.getElementById('journal-entry').value;
+            await fetch('/api/journals', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ entry }) 
+            });
+            e.target.reset();
+            loadJournals();
+        });
+        async function deleteJournal(id) {
+            if(confirm('Delete this journal entry?')) {
+                await fetch(`/api/journals/${id}`, { method: 'DELETE' });
+                loadJournals();
+            }
+        }
+        // --- 3. PRIVATE NOTES ---
+        let unlockingNoteId = null;
+        let unlockingNoteTitle = null;
+
+        async function loadNotes() {
+            const res = await fetch('/api/notes');
+            const notes = await res.json();
+            
+            const list = document.getElementById('notes-list');
+            if (notes.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
+                        <p class="text-slate-400">You haven't created any private notes yet.</p>
+                    </div>`;
+                return;
+            }
+            list.innerHTML = notes.map(n => `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between cursor-pointer hover:border-indigo-500 hover:shadow-md transition relative group">
+                    <div onclick="promptPassword(${n.id}, '${n.title}')" class="flex-1">
+                        <div class="text-xs font-bold text-indigo-500 mb-1 uppercase tracking-wider">${n.timestamp ? new Date(n.timestamp).toLocaleDateString() : 'Locked Note'}</div>
+                        <h3 class="font-bold text-slate-800">${n.title}</h3>
+                    </div>
+                    <div class="bg-slate-100 p-3 rounded-full text-slate-500">🔒</div>
+                    <button onclick="event.stopPropagation(); deleteNote(${n.id})" class="absolute -top-2 -right-2 bg-white text-slate-300 hover:text-red-500 shadow-sm border rounded-full w-8 h-8 opacity-0 group-hover:opacity-100 transition z-10">✕</button>
+                </div>
+            `).join('');
+        }
+        async function deleteNote(id) {
+            if(confirm('Delete this note forever?')) {
+                await fetch(`/api/notes/${id}`, { method: 'DELETE' });
+                loadNotes();
+            }
+        }
+        document.getElementById('note-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                title: document.getElementById('note-title').value.trim(),
+                content: document.getElementById('note-content').value.trim(),
+                password: document.getElementById('note-password').value
+            };
+
+            if (!payload.title || !payload.content || !payload.password) {
+                alert('Please fill in the note title, content, and password.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/notes', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    e.target.reset();
+                    loadNotes();
+                } else {
+                    alert(data.error || 'Failed to save note.');
+                }
+            } catch (err) {
+                console.error('Failed to save note:', err);
+                alert('An error occurred while saving the note.');
+            }
+        });
+
+        function promptPassword(id, title) {
+            unlockingNoteId = id;
+            unlockingNoteTitle = title;
+            document.getElementById('password-modal').classList.remove('hidden');
+            document.getElementById('unlock-pwd').value = '';
+            document.getElementById('unlock-err').classList.add('hidden');
+            document.getElementById('unlock-pwd').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+            unlockingNoteId = null;
+        }
+
+        function closeReadingModal() {
+            document.getElementById('reading-modal').classList.add('hidden');
+        }
+
+        document.getElementById('unlock-submit').addEventListener('click', async () => {
+            const pwd = document.getElementById('unlock-pwd').value;
+            const res = await fetch(`/api/notes/${unlockingNoteId}/unlock`, {
+                method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: pwd})
+            });
+            const data = await res.json();
+            if(data.success) {
+                closeModal();
+                document.getElementById('read-title').textContent = unlockingNoteTitle;
+                document.getElementById('read-content').textContent = data.content;
+                document.getElementById('reading-modal').classList.remove('hidden');
+            } else {
+                document.getElementById('unlock-err').classList.remove('hidden');
+            }
+        });
+
+        // Initialize App
+        showTab('habits');
+    </script>
+</body>
+</html>
